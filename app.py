@@ -191,54 +191,10 @@ elif page == "Modelo B — Demo FC (rojo)":
     st.plotly_chart(fig, use_container_width=True)
 
 elif page == "Grafo 3D":
-    st.title("Visualización 3D (estilo Colab · fondo oscuro)")
-    st.markdown(
-        """
-        Misma lógica visual que tu figura de Colab:
-        - superficie cortical semitransparente
-        - nodos = ROIs (color = fuerza de conexión)
-        - **aristas rojas** = correlaciones positivas
-        - **aristas azules** = correlaciones negativas
-        """
-    )
-    mode_choice = st.radio(
-        "Fuente del grafo",
-        [
-            "Automático (precomputado Colab si existe → si no, nilearn)",
-            "Forzar estilo nilearn (superficie + FC ilustrativa)",
-        ],
-        index=0,
-    )
-    mode = "precomputed" if mode_choice.startswith("Automático") else "nilearn"
-    with st.spinner("Generando grafo 3D (la primera vez puede descargar fsaverage)..."):
-        fig, used = cached_brain_figure(mode)
-    if used == "precomputed":
-        st.success("Usando FC / coordenadas exportadas desde Colab (`data/graph_*.npy`).")
-    elif used == "nilearn":
-        st.info(
-            "Superficie **real** (fsaverage5) + aristas de FC **ilustrativa** "
-            "(no es resting-state HCP de la cohorte). Estilo = tu figura de Colab."
-        )
-    else:
-        st.warning("Fallback sin nilearn.")
+    st.title("Visualización 3D")
+    with st.spinner("Generando grafo 3D..."):
+        fig, _used = cached_brain_figure("precomputed")
     st.plotly_chart(fig, use_container_width=True)
-    with st.expander("Cómo cargar el grafo REAL del sujeto 100206 (como en Colab)"):
-        st.markdown(
-            """
-            En Colab, después de tener `real_fc_reference` y centroides:
-
-            ```python
-            import numpy as np
-            np.save("graph_coords.npy", coords)           # N x 3
-            np.save("graph_strength.npy", real_strength)  # N,
-            np.save("graph_fc.npy", real_fc_reference)    # N x N
-            with open("graph_labels.txt", "w") as f:
-                f.write("\\n".join(real_names))
-            ```
-
-            Sube esos archivos a `data/` en GitHub y reabre **Grafo 3D**.
-            """
-        )
 
 else:
     st.title("Datos, entrega y limitaciones")
@@ -251,7 +207,7 @@ else:
         ### Limitaciones
         - N pequeño → resultados exploratorios
         - Modelo B: FC sintética (título rojo)
-        - Grafo: estilo Colab; FC de aristas ilustrativa salvo `graph_*.npy` desde Colab
+        - Grafo 3D: estilo visual de referencia; aristas de FC ilustrativa si no hay export precomputado
         """
     )
     st.dataframe(df.describe(include="all"), use_container_width=True)
